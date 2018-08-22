@@ -9,6 +9,7 @@
 * [#6174](https://github.com/rubocop-hq/rubocop/pull/6174): Add `--display-only-fail-level-offenses` to only output offenses at or above the fail level. ([@robotdana][])
 * Add autocorrect to `Style/For`. ([@rrosenblum][])
 * [#6173](https://github.com/rubocop-hq/rubocop/pull/6173): Add `AllowImplicitReturn` option to `Rails/SaveBang` cop. ([@robotdana][])
+* [#3727](https://github.com/rubocop-hq/rubocop/issues/3727): Add `left` option to enforced styles for `Layout/AlignHash` cop. ([@albaer][])
 
 ### Bug fixes
 
@@ -3531,3 +3532,4 @@
 [@MagedMilad]: https://github.com/MagedMilad
 [@robotdana]: https://github.com/robotdana
 [@bacchir]: https://github.com/bacchir
+[@albaer]: https://github.com/albaer
