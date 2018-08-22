@@ -271,6 +271,163 @@ RSpec.describe RuboCop::Cop::Layout::AlignHash, :config do
 
   include_examples 'not on separate lines'
 
+  context 'with left configuration' do
+    let(:cop_config) do
+      {
+        'EnforcedHashRocketStyle' => 'left',
+        'EnforcedColonStyle' => 'left'
+      }
+    end
+
+    include_examples 'not on separate lines'
+
+    it 'accepts left-aligned hash keys, separators, and values' do
+      expect_no_offenses(<<-RUBY.strip_indent)
+        hash1 = {
+          a: 0,
+          bb: 1,
+        }
+        hash2 = {
+          :a => 0,
+          :bb => 1
+        }
+        hash3 = {
+          'a' => 0,
+          'bb' => 1
+        }
+      RUBY
+    end
+
+    it 'registers an offense for misaligned hash keys' do
+      expect_offense(<<-RUBY.strip_indent)
+        hash1 = {
+          a: 0,
+           bb: 1
+           ^^^^^ Align the elements of a hash literal if they span more than one line.
+        }
+        hash2 = {
+          'ccc' => 2,
+         'dddd' => 2
+         ^^^^^^^^^^^ Align the elements of a hash literal if they span more than one line.
+        }
+      RUBY
+    end
+
+    it 'registers an offense for misaligned mixed multiline hash keys' do
+      expect_offense(<<-RUBY.strip_indent)
+        hash = { a: 1, b: 2,
+                c: 3 }
+                ^^^^ Align the elements of a hash literal if they span more than one line.
+      RUBY
+    end
+
+    it 'registers an offense for separator alignment' do
+      expect_offense(<<-RUBY.strip_indent)
+        hash = {
+            'a' => 0,
+          'bbb' => 1
+          ^^^^^^^^^^ Align the elements of a hash literal if they span more than one line.
+        }
+      RUBY
+    end
+
+    it 'registers an offense for table alignment' do
+      expect_offense(<<-RUBY.strip_indent)
+        hash = {
+          'a'   => 0,
+          ^^^^^^^^^^ Align the elements of a hash literal if they span more than one line.
+          'bbb' => 1
+        }
+      RUBY
+    end
+
+    context 'with implicit hash as last argument' do
+      it 'registers an offense for misaligned hash keys' do
+        expect_offense(<<-RUBY.strip_indent)
+          func(a: 0,
+            b: 1)
+            ^^^^ Align the elements of a hash literal if they span more than one line.
+        RUBY
+      end
+
+      it 'registers an offense for right alignment of keys' do
+        expect_offense(<<-RUBY.strip_indent)
+          func(a: 0,
+             bbb: 1)
+             ^^^^^^ Align the elements of a hash literal if they span more than one line.
+        RUBY
+      end
+
+      it 'accepts aligned hash keys' do
+        expect_no_offenses(<<-RUBY.strip_indent)
+          func(a: 0,
+               b: 1)
+        RUBY
+      end
+
+      it 'accepts an empty hash' do
+        expect_no_offenses('h = {}')
+      end
+    end
+
+    it 'auto-corrects alignment' do
+      new_source = autocorrect_source(<<-RUBY.strip_indent)
+        hash1 = { a: 0,
+             bb: 1,
+                   ccc: 2 }
+        hash2 = { :a   => 0,
+          :bb  => 1,
+                    :ccc  =>2 }
+        hash3 = { 'a'   =>   0,
+                       'bb'  => 1,
+            'ccc'  =>2 }
+      RUBY
+
+      expect(new_source).to eq(<<-RUBY.strip_indent)
+        hash1 = { a: 0,
+                  bb: 1,
+                  ccc: 2 }
+        hash2 = { :a => 0,
+                  :bb => 1,
+                  :ccc => 2 }
+        hash3 = { 'a' => 0,
+                  'bb' => 1,
+                  'ccc' => 2 }
+      RUBY
+    end
+
+    it 'auto-corrects alignment for mixed multiline hash keys' do
+      new_sources = autocorrect_source(<<-RUBY.strip_indent)
+        hash = { a: 1, b: 2,
+                c:   3 }
+      RUBY
+      expect(new_sources).to eq(<<-RUBY.strip_indent)
+        hash = { a: 1, b: 2,
+                 c: 3 }
+      RUBY
+    end
+
+    it 'auto-corrects alignment when using double splat' do
+      new_source = autocorrect_source(<<-RUBY.strip_indent)
+        hash1 = Hash(foo:  'bar',
+               **extra_params
+        )
+        hash2 = {foo: 'bar',
+                       **extra_params
+                }
+      RUBY
+
+      expect(new_source).to eq(<<-RUBY.strip_indent)
+        hash1 = Hash(foo: 'bar',
+                     **extra_params
+        )
+        hash2 = {foo: 'bar',
+                 **extra_params
+                }
+      RUBY
+    end
+  end
+
   context 'with table alignment configuration' do
     let(:cop_config) do
       {
