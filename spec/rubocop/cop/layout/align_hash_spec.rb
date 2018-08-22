@@ -163,7 +163,24 @@ RSpec.describe RuboCop::Cop::Layout::AlignHash, :config do
         }
         hash2 = {
           'ccc' => 2,
-          'dddd'  =>  2
+          'dddd' => 2
+        }
+      RUBY
+    end
+
+    it 'registers an offense for extra space around separators or values' do
+      expect_offense(<<-RUBY.strip_indent)
+        hash1 = {
+          a:  0,
+          ^^^^^ Align the elements of a hash literal if they span more than one line.
+          bbb:  1
+          ^^^^^^^ Align the elements of a hash literal if they span more than one line.
+        }
+        hash2 = {
+          'a'    => 0,
+          ^^^^^^^^^^^ Align the elements of a hash literal if they span more than one line.
+          'bbb' =>  1
+          ^^^^^^^^^^^ Align the elements of a hash literal if they span more than one line.
         }
       RUBY
     end
@@ -174,6 +191,21 @@ RSpec.describe RuboCop::Cop::Layout::AlignHash, :config do
             'a' => 0,
           'bbb' => 1
           ^^^^^^^^^^ Align the elements of a hash literal if they span more than one line.
+        }
+      RUBY
+    end
+
+    it 'registers an offense for table alignment' do
+      expect_offense(<<-RUBY.strip_indent)
+        hash1 = {
+          aa: 0,
+          b:  1
+          ^^^^^ Align the elements of a hash literal if they span more than one line.
+        }
+        hash2 = {
+          'a'   => 0,
+          ^^^^^^^^^^ Align the elements of a hash literal if they span more than one line.
+          'bbb' => 1
         }
       RUBY
     end
@@ -210,21 +242,27 @@ RSpec.describe RuboCop::Cop::Layout::AlignHash, :config do
     it 'auto-corrects alignment' do
       new_source = autocorrect_source(<<-RUBY.strip_indent)
         hash1 = { a: 0,
-             bb: 1,
+             bb:     1,
                    ccc: 2 }
         hash2 = { :a   => 0,
              :bb  => 1,
-                  :ccc  =>2 }
+                   :ccc       =>2 }
+        hash3 = { 'a' =>  0,
+             'bb'  => 1,
+                      'ccc'       =>2 }
       RUBY
 
-      # Separator and value are not corrected in 'key' mode.
+      # Separator and value are corrected in 'key' mode.
       expect(new_source).to eq(<<-RUBY.strip_indent)
         hash1 = { a: 0,
                   bb: 1,
                   ccc: 2 }
-        hash2 = { :a   => 0,
-                  :bb  => 1,
-                  :ccc  =>2 }
+        hash2 = { :a => 0,
+                  :bb => 1,
+                  :ccc => 2 }
+        hash3 = { 'a' => 0,
+                  'bb' => 1,
+                  'ccc' => 2 }
       RUBY
     end
 
