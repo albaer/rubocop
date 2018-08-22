@@ -8,6 +8,7 @@ module RuboCop
       # options are:
       #
       #   - key (left align keys)
+      #   - left (left align keys, one space before hash rockets and values)
       #   - separator (align hash rockets and colons, right align keys)
       #   - table (left align keys, hash rockets, and values)
       #
@@ -24,6 +25,23 @@ module RuboCop
       #   {
       #     :foo => bar,
       #      :ba => baz
+      #   }
+      #
+      #   # good
+      #   {
+      #     :foo => bar,
+      #     :ba => baz
+      #   }
+      #
+      # @example EnforcedHashRocketStyle: left
+      #   # bad
+      #   {
+      #     :foo => bar,
+      #      :ba => baz
+      #   }
+      #   {
+      #     :foo => bar,
+      #     :ba  => baz
       #   }
       #
       #   # good
@@ -67,6 +85,22 @@ module RuboCop
       #   {
       #     foo: bar,
       #      ba: baz
+      #   }
+      #
+      #   # good
+      #   {
+      #     foo: bar,
+      #     ba: baz
+      #   }
+      # @example EnforcedColonStyle: left
+      #   # bad
+      #   {
+      #     foo: bar,
+      #      ba: baz
+      #   }
+      #   {
+      #     foo: bar,
+      #     ba:  baz
       #   }
       #
       #   # good
@@ -280,6 +314,7 @@ module RuboCop
         def new_alignment(key)
           case cop_config[key]
           when 'key'       then KeyAlignment.new
+          when 'left'      then LeftAlignment.new
           when 'table'     then TableAlignment.new
           when 'separator' then SeparatorAlignment.new
           else raise "Unknown #{key}: #{cop_config[key]}"
